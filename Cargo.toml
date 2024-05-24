@@ -1,13 +1,15 @@
 [package]
 name = "objectpool"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2021"
 repository = "https://github.com/al8n/objectpool"
 homepage = "https://github.com/al8n/objectpool"
 documentation = "https://docs.rs/objectpool"
-description = "Yet another lock-free object pool"
-license = "MIT/Apache-2.0"
+description = "Yet another lock-free object pool, support no_std"
+license = "MIT OR Apache-2.0"
 rust-version = "1.56"
+keywords = ["atomic", "object-pool", "lockfree-object-pool", "non-blocking", "lock-free"]
+categories = ["concurrency", "memory-management", "data-structures", "development-tools", "no-std"]
 
 [[bench]]
 path = "benches/bench.rs"
@@ -25,7 +27,7 @@ crossbeam-queue = { version = "0.3", default-features = false }
 loom = { version = "0.7", optional = true }
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = "0.5.1"
 sharded-slab = "0.1"
 object-pool = "0.5"
 criterion-plot = "0.5"
