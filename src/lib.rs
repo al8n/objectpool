@@ -128,12 +128,12 @@ unsafe impl<T: Sync> Sync for Pool<T> {}
 
 impl<T> Pool<T> {
   /// Create a new pool with the given capacity.
-  /// 
+  ///
   /// # Example
-  /// 
+  ///
   /// ```rust
   /// use objectpool::Pool;
-  /// 
+  ///
   /// let pool = Pool::<u32>::bounded(10, Default::default, |_v| {});
   /// ```
   #[inline]
@@ -147,12 +147,12 @@ impl<T> Pool<T> {
   }
 
   /// Create a new pool with the unbounded capacity.
-  /// 
+  ///
   /// # Example
-  /// 
+  ///
   /// ```rust
   /// use objectpool::Pool;
-  /// 
+  ///
   /// let pool = Pool::<u32>::unbounded(Default::default, |_v| {});
   /// ```
   #[inline]
@@ -165,18 +165,18 @@ impl<T> Pool<T> {
   }
 
   /// Get an object from the pool.
-  /// 
+  ///
   /// # Example
-  /// 
+  ///
   /// ```rust
   /// use objectpool::Pool;
-  /// 
+  ///
   /// let pool = Pool::<u32>::bounded(10, Default::default, |_v| {});
-  /// 
+  ///
   /// let mut obj = pool.get();
-  /// 
+  ///
   /// assert_eq!(*obj, 0);
-  /// 
+  ///
   /// *obj = 42;
   /// drop(obj);
   /// ```
@@ -189,16 +189,16 @@ impl<T> Pool<T> {
   }
 
   /// Get an object from the pool with a fallback.
-  /// 
+  ///
   /// # Example
-  /// 
+  ///
   /// ```rust
   /// use objectpool::Pool;
-  /// 
+  ///
   /// let pool = Pool::<u32>::bounded(10, Default::default, |_| {});
-  /// 
+  ///
   /// let mut obj = pool.get_or_else(|| 42);
-  /// 
+  ///
   /// assert_eq!(*obj, 42);
   /// ```
   #[inline]
@@ -210,18 +210,18 @@ impl<T> Pool<T> {
   }
 
   /// Clear the pool.
-  /// 
+  ///
   /// # Example
-  /// 
+  ///
   /// ```rust
   /// use objectpool::Pool;
-  /// 
+  ///
   /// let pool = Pool::<u32>::bounded(10, Default::default, |v| {});
-  /// 
+  ///
   /// let mut obj = pool.get();
   /// *obj = 42;
   /// drop(obj);
-  /// 
+  ///
   /// pool.clear();
   /// ```
   #[inline]
