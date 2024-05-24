@@ -10,6 +10,9 @@ extern crate alloc as std;
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(not(any(feature = "std", feature = "alloc")))]
+compile_error!("`objectpool` requires either the 'std' or 'alloc' feature to be enabled.");
+
 use core::{mem::ManuallyDrop, ptr::NonNull};
 
 use crossbeam_queue::{ArrayQueue, SegQueue};
