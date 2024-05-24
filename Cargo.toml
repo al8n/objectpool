@@ -10,8 +10,8 @@ license = "MIT/Apache-2.0"
 rust-version = "1.56"
 
 [[bench]]
-path = "benches/foo.rs"
-name = "foo"
+path = "benches/bench.rs"
+name = "bench"
 harness = false
 
 [features]
@@ -21,9 +21,14 @@ std = ["crossbeam-queue/default"]
 [dependencies]
 crossbeam-queue = { version = "0.3", default-features = false }
 
+loom = { version = "0.7", optional = true }
+
 [dev-dependencies]
 criterion = "0.5"
-tempfile = "3"
+sharded-slab = "0.1"
+object-pool = "0.5"
+criterion-plot = "0.5"
+lockfree-object-pool = "0.1"
 
 [package.metadata.docs.rs]
 all-features = true
