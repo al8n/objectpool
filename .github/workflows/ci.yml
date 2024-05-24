@@ -272,7 +272,6 @@ jobs:
       - cross
       - test
       - sanitizer
-      - miri
       - loom
     steps:
       - uses: actions/checkout@v3

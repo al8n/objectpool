@@ -21,16 +21,26 @@ English | [简体中文][zh-cn-url]
 
 ## Features
 
-- Lock free, no extra allocation, backed by concurrent safe queue.
+- Lock free, backed by concurrent safe queue.
 - Builtin reference counter, no `Arc` wrapper required.
 - Simple APIs and support `no_std` environment.
+- Automatically put object back to pool.
 
 ## Installation
 
-```toml
-[dependencies]
-objectpool = "0.1.0"
-```
+- `std`
+
+  ```toml
+  [dependencies]
+  objectpool = "0.1"
+  ```
+
+- `no_std`
+
+  ```toml
+  [dependencies]
+  objectpool = { version = "0.1", default-features = false, features = ["alloc"] }
+  ```
 
 ## Tests
 
@@ -49,7 +59,7 @@ objectpool = "0.1.0"
 - `loom`:
 
     ```sh
-    cargo test --features loom
+    cargo test --tests --features loom
     ```
 
 ## Benchmarks
@@ -59,6 +69,10 @@ For detailed reports, you can see the latest Benchmark GitHub Action, and downlo
 ```sh
 cargo bench
 ```
+
+## Why this crate?
+
+I need an object pool that supports the `no_std` environment. Unfortunately, none of the [`object-pool`](https://crates.io/crates/object-pool), [`lockfree-object-pool`](https://crates.io/crates/lockfree-object-pool) and [`sharded-slab`](https://crates.io/crates/sharded-slab) support `no_std`.
 
 #### License
 
