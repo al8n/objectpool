@@ -15,8 +15,7 @@ compile_error!("`objectpool` requires either the 'std' or 'alloc' feature to be 
 
 use core::{mem::ManuallyDrop, ptr::NonNull};
 
-// use crossbeam_queue::{ArrayQueue, SegQueue};
-use concurrent_queue::{ConcurrentQueue as ArrayQueue, ConcurrentQueue as SegQueue};
+use concurrent_queue::ConcurrentQueue;
 
 #[cfg(not(feature = "loom"))]
 use core::sync::atomic::{AtomicPtr, AtomicUsize, Ordering};
@@ -109,52 +108,30 @@ impl<'a, T> Drop for ReusableObjectRef<'a, T> {
   }
 }
 
-// It is ok to have a large enum variant here because the enum will always be `Box::into_raw(Box::new(_))`
-#[allow(clippy::large_enum_variant)]
-enum Backed<T> {
-  Bounded(ArrayQueue<T>),
-  Unbounded(SegQueue<T>),
-}
-
 struct Queue<T> {
   refs: AtomicUsize,
-  queue: Backed<T>,
+  queue: ConcurrentQueue<T>,
 }
 
 impl<T> Queue<T> {
   #[inline]
-  fn bounded(queue: ArrayQueue<T>) -> Self {
+  fn new(queue: ConcurrentQueue<T>) -> Self {
     Self {
       refs: AtomicUsize::new(1),
-      queue: Backed::Bounded(queue),
-    }
-  }
-
-  #[inline]
-  fn unbounded(queue: SegQueue<T>) -> Self {
-    Self {
-      refs: AtomicUsize::new(1),
-      queue: Backed::Unbounded(queue),
+      queue,
     }
   }
 
   #[inline]
   fn push(&self, obj: T) {
-    match &self.queue {
-      Backed::Bounded(queue) => {
-        let _ = queue.push(obj);
-      }
-      Backed::Unbounded(queue) => {
-        let _ = queue.push(obj);
-      }
-    }
+    let _ = self.queue.push(obj);
   }
 
   #[inline]
   fn pop(&self) -> Option<T> {
-    match &self.queue {
-      Backed::Bounded(queue) => queue.pop().ok(),
-      Backed::Unbounded(queue) => queue.pop().ok(),
+    match self.queue.pop() {
+      Ok(obj) => Some(obj),
+      Err(_) => None,
     }
   }
 }
@@ -186,7 +163,7 @@ impl<T> Pool<T> {
     new: impl Fn() -> T + Send + Sync + 'static,
     reset: impl Fn(&mut T) + Send + Sync + 'static,
   ) -> Self {
-    let queue = Queue::bounded(ArrayQueue::<T>::bounded(capacity));
+    let queue = Queue::new(ConcurrentQueue::<T>::bounded(capacity));
     Self::new(queue, new, reset)
   }
 
@@ -204,7 +181,7 @@ impl<T> Pool<T> {
     new: impl Fn() -> T + Send + Sync + 'static,
     reset: impl Fn(&mut T) + Send + Sync + 'static,
   ) -> Self {
-    let queue = Queue::unbounded(SegQueue::<T>::unbounded());
+    let queue = Queue::new(ConcurrentQueue::<T>::unbounded());
     Self::new(queue, new, reset)
   }
 
