@@ -21,8 +21,8 @@ English | [简体中文][zh-cn-url]
 
 ## Features
 
-- Lock free, backed by concurrent safe queue.
-- Unlike other object pool implementation in Rust, get always return an owned struct, do not need to handle lifetime.
+- Lock free, no extra allocation, backed by concurrent safe queue.
+- Unlike other object pool implementation in Rust, get always return an owned struct, users do not need to handle lifetime.
 - Builtin reference counter, no `Arc` wrapper required.
 - Simple APIs and support `no_std` environment.
 

@@ -32,8 +32,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
-          - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
@@ -56,7 +54,9 @@ jobs:
         path: ~/.cargo
         key: ${{ runner.os }}-coverage-dotcargo
     - name: Run test
-      run: cargo bench
+      run: |
+        cd benchmark
+        cargo bench
     - name: Upload benchmark results
       uses: actions/upload-artifact@v3
       with:

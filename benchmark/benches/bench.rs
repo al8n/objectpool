@@ -3,7 +3,7 @@ extern crate criterion;
 
 use criterion::Criterion;
 
-mod bench_tools;
+
 
 #[macro_use]
 mod bench_generic;

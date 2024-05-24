@@ -10,11 +10,7 @@ license = "MIT OR Apache-2.0"
 rust-version = "1.56"
 keywords = ["atomic", "object-pool", "lockfree-object-pool", "non-blocking", "lock-free"]
 categories = ["concurrency", "memory-management", "data-structures", "development-tools", "no-std"]
-
-[[bench]]
-path = "benches/bench.rs"
-name = "bench"
-harness = false
+exclude = ["benchmark"]
 
 [features]
 default = ["std"]
@@ -25,13 +21,6 @@ std = ["crossbeam-queue/default"]
 crossbeam-queue = { version = "0.3", default-features = false }
 
 loom = { version = "0.7", optional = true }
-
-[dev-dependencies]
-criterion = "0.5.1"
-sharded-slab = "0.1"
-object-pool = "0.5"
-criterion-plot = "0.5"
-lockfree-object-pool = "0.1"
 
 [package.metadata.docs.rs]
 all-features = true
