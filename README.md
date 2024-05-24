@@ -3,7 +3,7 @@
 </div>
 <div align="center">
 
-Yet another lock-free object pool.
+Yet another lock-free object pool, support `no_std`.
 
 [<img alt="github" src="https://img.shields.io/badge/github-al8n/objectpool-8da0cb?style=for-the-badge&logo=Github" height="22">][Github-url]
 <img alt="LoC" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Fal8n%2F327b2a8aef9003246e45c6e47fe63937%2Fraw%2Fobjectpool" height="22">
@@ -22,7 +22,6 @@ English | [简体中文][zh-cn-url]
 ## Features
 
 - Lock free, no extra allocation, backed by concurrent safe queue.
-- Unlike other object pool implementation in Rust, get always return an owned struct, users do not need to handle lifetime.
 - Builtin reference counter, no `Arc` wrapper required.
 - Simple APIs and support `no_std` environment.
 
@@ -52,6 +51,14 @@ objectpool = "0.1.0"
     ```sh
     cargo test --features loom
     ```
+
+## Benchmarks
+
+For detailed reports, you can see the latest Benchmark GitHub Action, and download the Artifacts.
+
+```sh
+cargo bench
+```
 
 #### License
 
