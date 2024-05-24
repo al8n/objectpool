@@ -19,7 +19,6 @@ macro_rules! pull_forward_ {
   ($pool:ident, 1) => {
     $pool.pull_owned()
   };
-
   ($pool:ident, 3) => {
     $pool.clone().create_owned().unwrap()
   };
@@ -70,12 +69,12 @@ macro_rules! bench_alloc_mt_impl_ {
         use std::thread;
         use std::time::Instant;
 
-        let pool = Arc::new($expression);
+        let pool = $expression;
         let start_barrier = Arc::new(Barrier::new(6));
         let stop_barrier = Arc::new(Barrier::new(6));
         let mut children = Vec::new();
         for _ in 0..5 {
-          let pool = Arc::clone(&pool);
+          let pool = pool.clone();
           let start_barrier = Arc::clone(&start_barrier);
           let stop_barrier = Arc::clone(&stop_barrier);
           let child = thread::spawn(move || {
@@ -113,12 +112,12 @@ macro_rules! bench_free_mt_impl_ {
         use std::sync::Barrier;
         use std::thread;
         use std::time::Instant;
-        let pool = Arc::new($expression);
+        let pool = $expression;
         let start_barrier = Arc::new(Barrier::new(6));
         let stop_barrier = Arc::new(Barrier::new(6));
         let mut children = Vec::new();
         for _ in 0..5 {
-          let pool = Arc::clone(&pool);
+          let pool = pool.clone();
           let start_barrier = Arc::clone(&start_barrier);
           let stop_barrier = Arc::clone(&stop_barrier);
           let child = thread::spawn(move || {
@@ -159,7 +158,7 @@ macro_rules! bench_forward_impl_ {
         use std::thread;
         use std::time::Instant;
 
-        let pool = Arc::new($expression);
+        let pool = $expression;
 
         let queue = Arc::new(Queue::new());
         let start_barrier = Arc::new(Barrier::new($nb_readder + $nb_writter + 1));
@@ -183,7 +182,7 @@ macro_rules! bench_forward_impl_ {
           children.push(child);
         }
         for _ in 0..$nb_writter {
-          let pool = Arc::clone(&pool);
+          let pool = pool.clone();
           let queue = Arc::clone(&queue);
           let start_barrier = Arc::clone(&start_barrier);
           let stop_writer_barrier = Arc::clone(&stop_writer_barrier);

@@ -307,46 +307,46 @@ fn bench_alloc_mt(c: &mut Criterion) {
   bench_alloc_mt_impl_!(
     group,
     "none object poll",
-    lockfree_object_pool::NoneObjectPool::new(|| Vec::<u8>::with_capacity(16 * 1024)),
+    Arc::new(lockfree_object_pool::NoneObjectPool::new(|| Vec::<u8>::with_capacity(16 * 1024))),
     1
   );
   bench_alloc_mt_impl_!(
     group,
     "mutex object poll",
-    lockfree_object_pool::MutexObjectPool::<Vec<u8>>::new(
+    Arc::new(lockfree_object_pool::MutexObjectPool::<Vec<u8>>::new(
       || Vec::with_capacity(16 * 1024),
       |_v| {}
-    ),
+    )),
     1
   );
   bench_alloc_mt_impl_!(
     group,
     "spin_lock object poll",
-    lockfree_object_pool::SpinLockObjectPool::<Vec<u8>>::new(
+    Arc::new(lockfree_object_pool::SpinLockObjectPool::<Vec<u8>>::new(
       || Vec::with_capacity(16 * 1024),
       |_v| {}
-    ),
+    )),
     1
   );
   bench_alloc_mt_impl_!(
     group,
     "linear object poll",
-    lockfree_object_pool::LinearObjectPool::<Vec<u8>>::new(
+    Arc::new(lockfree_object_pool::LinearObjectPool::<Vec<u8>>::new(
       || Vec::with_capacity(16 * 1024),
       |_v| {}
-    ),
+    )),
     1
   );
   bench_alloc_mt_impl_!(
     group,
     "crate 'object-pool'",
-    object_pool::Pool::<Vec<u8>>::new(32, || Vec::with_capacity(4096)),
+    Arc::new(object_pool::Pool::<Vec<u8>>::new(32, || Vec::with_capacity(4096))),
     2
   );
   bench_alloc_mt_impl_!(
     group,
     "crate 'sharded-slab'",
-    sharded_slab::Pool::<Vec4096>::new(),
+    Arc::new(sharded_slab::Pool::<Vec4096>::new()),
     3
   );
   group.finish();
@@ -371,46 +371,46 @@ fn bench_free_mt(c: &mut Criterion) {
   bench_free_mt_impl_!(
     group,
     "none object poll",
-    lockfree_object_pool::NoneObjectPool::new(|| Vec::<u8>::with_capacity(16 * 1024)),
+    Arc::new(lockfree_object_pool::NoneObjectPool::new(|| Vec::<u8>::with_capacity(16 * 1024))),
     1
   );
   bench_free_mt_impl_!(
     group,
     "mutex object poll",
-    lockfree_object_pool::MutexObjectPool::<Vec<u8>>::new(
+    Arc::new(lockfree_object_pool::MutexObjectPool::<Vec<u8>>::new(
       || Vec::with_capacity(16 * 1024),
       |_v| {}
-    ),
+    )),
     1
   );
   bench_free_mt_impl_!(
     group,
     "spin_lock object poll",
-    lockfree_object_pool::SpinLockObjectPool::<Vec<u8>>::new(
+    Arc::new(lockfree_object_pool::SpinLockObjectPool::<Vec<u8>>::new(
       || Vec::with_capacity(16 * 1024),
       |_v| {}
-    ),
+    )),
     1
   );
   bench_free_mt_impl_!(
     group,
     "linear object poll",
-    lockfree_object_pool::LinearObjectPool::<Vec<u8>>::new(
+    Arc::new(lockfree_object_pool::LinearObjectPool::<Vec<u8>>::new(
       || Vec::with_capacity(16 * 1024),
       |_v| {}
-    ),
+    )),
     1
   );
   bench_free_mt_impl_!(
     group,
     "crate 'object-pool'",
-    object_pool::Pool::<Vec<u8>>::new(32, || Vec::with_capacity(4096)),
+    Arc::new(object_pool::Pool::<Vec<u8>>::new(32, || Vec::with_capacity(4096))),
     2
   );
   bench_free_mt_impl_!(
     group,
     "crate 'sharded-slab'",
-    sharded_slab::Pool::<Vec4096>::new(),
+    Arc::new(sharded_slab::Pool::<Vec4096>::new()),
     3
   );
   group.finish();
@@ -442,7 +442,7 @@ fn bench_forward_multi_thread(c: &mut Criterion, nb_writter: usize, nb_readder: 
   bench_forward_impl_!(
     group,
     "none object poll",
-    lockfree_object_pool::NoneObjectPool::new(|| Vec::<u8>::with_capacity(16 * 1024)),
+    Arc::new(lockfree_object_pool::NoneObjectPool::new(|| Vec::<u8>::with_capacity(16 * 1024))),
     nb_readder,
     nb_writter,
     1
@@ -450,10 +450,10 @@ fn bench_forward_multi_thread(c: &mut Criterion, nb_writter: usize, nb_readder: 
   bench_forward_impl_!(
     group,
     "mutex object poll",
-    lockfree_object_pool::MutexObjectPool::<Vec<u8>>::new(
+    Arc::new(lockfree_object_pool::MutexObjectPool::<Vec<u8>>::new(
       || Vec::with_capacity(16 * 1024),
       |_v| {}
-    ),
+    )),
     nb_readder,
     nb_writter,
     1
@@ -461,10 +461,10 @@ fn bench_forward_multi_thread(c: &mut Criterion, nb_writter: usize, nb_readder: 
   bench_forward_impl_!(
     group,
     "spin_lock object poll",
-    lockfree_object_pool::SpinLockObjectPool::<Vec<u8>>::new(
+    Arc::new(lockfree_object_pool::SpinLockObjectPool::<Vec<u8>>::new(
       || Vec::with_capacity(16 * 1024),
       |_v| {}
-    ),
+    )),
     nb_readder,
     nb_writter,
     1
@@ -472,10 +472,10 @@ fn bench_forward_multi_thread(c: &mut Criterion, nb_writter: usize, nb_readder: 
   bench_forward_impl_!(
     group,
     "linear object poll",
-    lockfree_object_pool::LinearObjectPool::<Vec<u8>>::new(
+    Arc::new(lockfree_object_pool::LinearObjectPool::<Vec<u8>>::new(
       || Vec::with_capacity(16 * 1024),
       |_v| {}
-    ),
+    )),
     nb_readder,
     nb_writter,
     1
@@ -483,7 +483,7 @@ fn bench_forward_multi_thread(c: &mut Criterion, nb_writter: usize, nb_readder: 
   bench_forward_impl_!(
     group,
     "crate 'sharded-slab'",
-    sharded_slab::Pool::<Vec4096>::new(),
+    Arc::new(sharded_slab::Pool::<Vec4096>::new()),
     nb_readder,
     nb_writter,
     3
