@@ -15,7 +15,8 @@ compile_error!("`objectpool` requires either the 'std' or 'alloc' feature to be 
 
 use core::{mem::ManuallyDrop, ptr::NonNull};
 
-use crossbeam_queue::{ArrayQueue, SegQueue};
+// use crossbeam_queue::{ArrayQueue, SegQueue};
+use concurrent_queue::{ConcurrentQueue as ArrayQueue, ConcurrentQueue as SegQueue};
 
 #[cfg(not(feature = "loom"))]
 use core::sync::atomic::{AtomicPtr, AtomicUsize, Ordering};
@@ -102,15 +103,17 @@ impl<T> Queue<T> {
       Backed::Bounded(queue) => {
         let _ = queue.push(obj);
       }
-      Backed::Unbounded(queue) => queue.push(obj),
+      Backed::Unbounded(queue) => {
+        let _ = queue.push(obj);
+      }
     }
   }
 
   #[inline]
   fn pop(&self) -> Option<T> {
     match &self.queue {
-      Backed::Bounded(queue) => queue.pop(),
-      Backed::Unbounded(queue) => queue.pop(),
+      Backed::Bounded(queue) => queue.pop().ok(),
+      Backed::Unbounded(queue) => queue.pop().ok(),
     }
   }
 }
@@ -142,7 +145,7 @@ impl<T> Pool<T> {
     new: impl Fn() -> T + Send + Sync + 'static,
     reset: impl Fn(&mut T) + Send + Sync + 'static,
   ) -> Self {
-    let queue = Queue::bounded(ArrayQueue::<T>::new(capacity));
+    let queue = Queue::bounded(ArrayQueue::<T>::bounded(capacity));
     Self::new(queue, new, reset)
   }
 
@@ -160,7 +163,7 @@ impl<T> Pool<T> {
     new: impl Fn() -> T + Send + Sync + 'static,
     reset: impl Fn(&mut T) + Send + Sync + 'static,
   ) -> Self {
-    let queue = Queue::unbounded(SegQueue::<T>::new());
+    let queue = Queue::unbounded(SegQueue::<T>::unbounded());
     Self::new(queue, new, reset)
   }
 

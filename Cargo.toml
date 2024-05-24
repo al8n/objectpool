@@ -14,11 +14,14 @@ exclude = ["benchmark"]
 
 [features]
 default = ["std"]
-alloc = ["crossbeam-queue/alloc"]
-std = ["crossbeam-queue/default"]
+# alloc = ["crossbeam-queue/alloc"]
+# std = ["crossbeam-queue/default"]
+alloc = []
+std = ["concurrent-queue/default"]
 
 [dependencies]
-crossbeam-queue = { version = "0.3", default-features = false }
+# crossbeam-queue = { version = "0.3", default-features = false }
+concurrent-queue = { version = "2", default-features = false }
 
 loom = { version = "0.7", optional = true }
 
