@@ -68,6 +68,47 @@ impl<T> Drop for ReusableObject<T> {
   }
 }
 
+/// A reusable `T`.
+pub struct ReusableObjectRef<'a, T> {
+  pool: &'a Pool<T>,
+  obj: ManuallyDrop<T>,
+}
+
+impl<'a, T> AsRef<T> for ReusableObjectRef<'a, T> {
+  fn as_ref(&self) -> &T {
+    &self.obj
+  }
+}
+
+impl<'a, T> AsMut<T> for ReusableObjectRef<'a, T> {
+  fn as_mut(&mut self) -> &mut T {
+    &mut self.obj
+  }
+}
+
+impl<'a, T> core::ops::Deref for ReusableObjectRef<'a, T> {
+  type Target = T;
+
+  fn deref(&self) -> &Self::Target {
+    &self.obj
+  }
+}
+
+impl<'a, T> core::ops::DerefMut for ReusableObjectRef<'a, T> {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.obj
+  }
+}
+
+impl<'a, T> Drop for ReusableObjectRef<'a, T> {
+  fn drop(&mut self) {
+    // SAFETY: The object is dropped, we never reuse the ManuallyDrop again.
+    unsafe {
+      self.pool.attach(ManuallyDrop::take(&mut self.obj));
+    }
+  }
+}
+
 // It is ok to have a large enum variant here because the enum will always be `Box::into_raw(Box::new(_))`
 #[allow(clippy::large_enum_variant)]
 enum Backed<T> {
@@ -184,7 +225,31 @@ impl<T> Pool<T> {
   /// drop(obj);
   /// ```
   #[inline]
-  pub fn get(&self) -> ReusableObject<T> {
+  pub fn get(&self) -> ReusableObjectRef<T> {
+    ReusableObjectRef {
+      pool: self,
+      obj: ManuallyDrop::new(self.queue().pop().unwrap_or_else(|| self.new_object())),
+    }
+  }
+
+  /// Get an object from the pool.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// use objectpool::Pool;
+  ///
+  /// let pool = Pool::<u32>::bounded(10, Default::default, |_v| {});
+  ///
+  /// let mut obj = pool.get_owned();
+  ///
+  /// assert_eq!(*obj, 0);
+  ///
+  /// *obj = 42;
+  /// drop(obj);
+  /// ```
+  #[inline]
+  pub fn get_owned(&self) -> ReusableObject<T> {
     ReusableObject {
       pool: self.clone(),
       obj: ManuallyDrop::new(self.queue().pop().unwrap_or_else(|| self.new_object())),
@@ -205,7 +270,28 @@ impl<T> Pool<T> {
   /// assert_eq!(*obj, 42);
   /// ```
   #[inline]
-  pub fn get_or_else(&self, fallback: impl Fn() -> T) -> ReusableObject<T> {
+  pub fn get_or_else(&self, fallback: impl Fn() -> T) -> ReusableObjectRef<T> {
+    ReusableObjectRef {
+      pool: self,
+      obj: ManuallyDrop::new(self.queue().pop().unwrap_or_else(fallback)),
+    }
+  }
+
+  /// Get an object from the pool with a fallback.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// use objectpool::Pool;
+  ///
+  /// let pool = Pool::<u32>::bounded(10, Default::default, |_| {});
+  ///
+  /// let mut obj = pool.get_owned_or_else(|| 42);
+  ///
+  /// assert_eq!(*obj, 42);
+  /// ```
+  #[inline]
+  pub fn get_owned_or_else(&self, fallback: impl Fn() -> T) -> ReusableObject<T> {
     ReusableObject {
       pool: self.clone(),
       obj: ManuallyDrop::new(self.queue().pop().unwrap_or_else(fallback)),

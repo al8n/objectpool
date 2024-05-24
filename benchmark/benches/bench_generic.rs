@@ -24,7 +24,7 @@ macro_rules! pull_forward_ {
     $pool.clone().create_owned().unwrap()
   };
   ($pool:ident, 4) => {
-    $pool.get()
+    $pool.get_owned()
   };
 }
 
