@@ -480,6 +480,7 @@ mod tests {
     pool_clone_in();
   }
 
+  #[cfg(feature = "std")]
   fn multi_threaded_access_in() {
     #[cfg(not(feature = "loom"))]
     const OUTER: usize = 10;
@@ -517,6 +518,7 @@ mod tests {
   }
 
   #[test]
+  #[cfg(feature = "std")]
   fn multi_threaded_access() {
     #[cfg(all(feature = "std", not(feature = "loom")))]
     multi_threaded_access_in();
