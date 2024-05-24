@@ -16,6 +16,7 @@ harness = false
 
 [features]
 default = ["std"]
+alloc = ["crossbeam-queue/alloc"]
 std = ["crossbeam-queue/default"]
 
 [dependencies]

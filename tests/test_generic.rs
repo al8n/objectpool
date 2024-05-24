@@ -3,12 +3,20 @@ macro_rules! test_generic_01 {
   ($name:ident, $expression:expr) => {
     #[test]
     fn $name() {
-      let pool = $expression;
-      for _ in 0..2 {
-        let mut v = pool.get();
-        assert_eq!(*v, 0);
-        *v += 1;
+      fn run() {
+        let pool = $expression;
+        for _ in 0..2 {
+          let mut v = pool.get();
+          assert_eq!(*v, 0);
+          *v += 1;
+        }
       }
+
+      #[cfg(not(feature = "loom"))]
+      run();
+
+      #[cfg(feature = "loom")]
+      loom::model(run);
     }
   };
 }
@@ -17,6 +25,7 @@ macro_rules! test_generic_01 {
 macro_rules! test_generic_02 {
   ($name:ident, $expression:expr) => {
     #[test]
+    #[cfg(not(feature = "loom"))]
     fn $name() {
       use std::sync::mpsc;
       use std::sync::Arc;
@@ -59,15 +68,24 @@ macro_rules! test_generic_02 {
 macro_rules! test_recycle_generic_01 {
   ($name:ident, $expression:expr) => {
     #[test]
+    #[cfg(not(feature = "loom"))]
     fn $name() {
-      let pool = $expression;
+      fn run() {
+        let pool = $expression;
 
-      let mut item1 = pool.get();
-      *item1 = 5;
-      drop(item1);
+        let mut item1 = pool.get();
+        *item1 = 5;
+        drop(item1);
 
-      let item2 = pool.get();
-      assert_eq!(*item2, 5);
+        let item2 = pool.get();
+        assert_eq!(*item2, 5);
+      }
+
+      #[cfg(not(feature = "loom"))]
+      run();
+
+      #[cfg(feature = "loom")]
+      loom::model(run);
     }
   };
 }

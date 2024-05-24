@@ -400,16 +400,26 @@ mod tests {
   }
 
   fn multi_threaded_access_in() {
+    #[cfg(not(feature = "loom"))]
+    const OUTER: usize = 10;
+    #[cfg(feature = "loom")]
+    const OUTER: usize = 1;
+
+    #[cfg(not(feature = "loom"))]
+    const INNER: usize = 100;
+    #[cfg(feature = "loom")]
+    const INNER: usize = 10;
+
     let pool = create_pool(10);
 
     let mut handles = vec![];
 
-    for _ in 0..10 {
+    for _ in 0..OUTER {
       let pool = pool.clone();
       let handle = thread::spawn(move || {
-        for i in 0..100 {
+        for i in 0..INNER {
           let mut obj = pool.get();
-          obj.push(i);
+          obj.push(i as u8);
           drop(obj);
         }
       });
@@ -465,6 +475,7 @@ mod tests {
     custom_new_and_reset_in();
   }
 
+  #[cfg(not(feature = "loom"))]
   fn stress_test_in() {
     let pool = create_pool(10);
 
@@ -479,11 +490,8 @@ mod tests {
   }
 
   #[test]
+  #[cfg(not(feature = "loom"))]
   fn stress_test() {
-    #[cfg(feature = "loom")]
-    loom::model(stress_test_in);
-
-    #[cfg(not(feature = "loom"))]
     stress_test_in();
   }
 
