@@ -104,13 +104,13 @@ jobs:
         run: |
           cargo install cross
           cross build --target ${{ matrix.target }}
-        if: matrix.target != 'wasm32-unknown-unknown'
-      # # WASM support
-      # - name: cargo build --target ${{ matrix.target }}
-      #   run: |
-      #     rustup target add ${{ matrix.target }}
-      #     cargo build --features js --target ${{ matrix.target }}
-      #   if: matrix.target == 'wasm32-unknown-unknown'
+        if: matrix.target != 'wasm32-unknown-unknown' || matrix.target != 'wasm32-wasi'
+      # WASM support
+      - name: cargo build --target ${{ matrix.target }}
+        run: |
+          rustup target add ${{ matrix.target }}
+          cargo build --target ${{ matrix.target }}
+        if: matrix.target == 'wasm32-unknown-unknown' || matrix.target == 'wasm32-wasi'
       # - name: cargo build --target ${{ matrix.target }}
       #   run: |
       #     rustup target add ${{ matrix.target }}

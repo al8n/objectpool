@@ -23,10 +23,25 @@ use core::sync::atomic::{AtomicPtr, AtomicUsize, Ordering};
 #[cfg(feature = "loom")]
 use loom::sync::atomic::{AtomicPtr, AtomicUsize, Ordering};
 
+#[cfg(not(feature = "std"))]
+use std::boxed::Box;
+
 /// A reusable `T`.
 pub struct ReusableObject<T> {
   pool: Pool<T>,
   obj: ManuallyDrop<T>,
+}
+
+impl<T> AsRef<T> for ReusableObject<T> {
+  fn as_ref(&self) -> &T {
+    &self.obj
+  }
+}
+
+impl<T> AsMut<T> for ReusableObject<T> {
+  fn as_mut(&mut self) -> &mut T {
+    &mut self.obj
+  }
 }
 
 impl<T> core::ops::Deref for ReusableObject<T> {
@@ -113,6 +128,14 @@ unsafe impl<T: Sync> Sync for Pool<T> {}
 
 impl<T> Pool<T> {
   /// Create a new pool with the given capacity.
+  /// 
+  /// # Example
+  /// 
+  /// ```rust
+  /// use objectpool::Pool;
+  /// 
+  /// let pool = Pool::<u32>::bounded(10, Default::default, |_v| {});
+  /// ```
   #[inline]
   pub fn bounded(
     capacity: usize,
@@ -124,6 +147,14 @@ impl<T> Pool<T> {
   }
 
   /// Create a new pool with the unbounded capacity.
+  /// 
+  /// # Example
+  /// 
+  /// ```rust
+  /// use objectpool::Pool;
+  /// 
+  /// let pool = Pool::<u32>::unbounded(Default::default, |_v| {});
+  /// ```
   #[inline]
   pub fn unbounded(
     new: impl Fn() -> T + Send + Sync + 'static,
@@ -131,6 +162,71 @@ impl<T> Pool<T> {
   ) -> Self {
     let queue = Queue::unbounded(SegQueue::<T>::new());
     Self::new(queue, new, reset)
+  }
+
+  /// Get an object from the pool.
+  /// 
+  /// # Example
+  /// 
+  /// ```rust
+  /// use objectpool::Pool;
+  /// 
+  /// let pool = Pool::<u32>::bounded(10, Default::default, |_v| {});
+  /// 
+  /// let mut obj = pool.get();
+  /// 
+  /// assert_eq!(*obj, 0);
+  /// 
+  /// *obj = 42;
+  /// drop(obj);
+  /// ```
+  #[inline]
+  pub fn get(&self) -> ReusableObject<T> {
+    ReusableObject {
+      pool: self.clone(),
+      obj: ManuallyDrop::new(self.queue().pop().unwrap_or_else(|| self.new_object())),
+    }
+  }
+
+  /// Get an object from the pool with a fallback.
+  /// 
+  /// # Example
+  /// 
+  /// ```rust
+  /// use objectpool::Pool;
+  /// 
+  /// let pool = Pool::<u32>::bounded(10, Default::default, |_| {});
+  /// 
+  /// let mut obj = pool.get_or_else(|| 42);
+  /// 
+  /// assert_eq!(*obj, 42);
+  /// ```
+  #[inline]
+  pub fn get_or_else(&self, fallback: impl Fn() -> T) -> ReusableObject<T> {
+    ReusableObject {
+      pool: self.clone(),
+      obj: ManuallyDrop::new(self.queue().pop().unwrap_or_else(fallback)),
+    }
+  }
+
+  /// Clear the pool.
+  /// 
+  /// # Example
+  /// 
+  /// ```rust
+  /// use objectpool::Pool;
+  /// 
+  /// let pool = Pool::<u32>::bounded(10, Default::default, |v| {});
+  /// 
+  /// let mut obj = pool.get();
+  /// *obj = 42;
+  /// drop(obj);
+  /// 
+  /// pool.clear();
+  /// ```
+  #[inline]
+  pub fn clear(&self) {
+    while self.queue().pop().is_some() {}
   }
 
   #[inline]
@@ -150,24 +246,6 @@ impl<T> Pool<T> {
         // SAFETY: Box::new is safe because the closure is 'static.
         reset: NonNull::new_unchecked(Box::into_raw(Box::new(reset))),
       }
-    }
-  }
-
-  /// Get an object from the pool.
-  #[inline]
-  pub fn get(&self) -> ReusableObject<T> {
-    ReusableObject {
-      pool: self.clone(),
-      obj: ManuallyDrop::new(self.queue().pop().unwrap_or_else(|| self.new_object())),
-    }
-  }
-
-  /// Get an object from the pool with a fallback.
-  #[inline]
-  pub fn get_or_else(&self, fallback: impl Fn() -> T) -> ReusableObject<T> {
-    ReusableObject {
-      pool: self.clone(),
-      obj: ManuallyDrop::new(self.queue().pop().unwrap_or_else(fallback)),
     }
   }
 
