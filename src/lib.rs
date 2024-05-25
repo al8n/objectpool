@@ -625,7 +625,7 @@ mod tests {
     custom_new_and_reset_in();
   }
 
-  #[cfg(not(feature = "loom"))]
+  #[cfg(not(any(feature = "loom", miri)))]
   fn stress_test_in() {
     let pool = create_pool(10);
 
@@ -640,7 +640,7 @@ mod tests {
   }
 
   #[test]
-  #[cfg(not(feature = "loom"))]
+  #[cfg(not(any(feature = "loom", miri)))]
   fn stress_test() {
     stress_test_in();
   }
